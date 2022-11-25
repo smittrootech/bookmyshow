@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width,initial-scale=1.0">
+        <title>Select Seat</title>
+        <style>
+            html,body{
+                margin:0px;
+                font-family:Roboto,sans-serif
+            }
+            a{
+                text-decoration:none;
+            }
+            button:hover{
+                cursor:pointer;
+            }
+            hr{
+                border:.5px solid #eee;
+                margin-top:10px;
+                margin-bottom:10px;
+            }
+            nav{
+                background-color:#1f2533;
+                padding:15px;
+                color:#fff;
+            }
+            nav  .nav-item-container{
+                display: inline-block;
+                margin-right:20px;
+                vertical-align:middle;
+                /* float:left; */
+            }
+            .left-nav-item{
+                display:inline-block;
+                position:relative;
+                vertical-align:middle !important;
+            }
+            .right-nav-item{
+                float:right !important;
+                margin-top:9px;
+            }
+            .mallname{
+                font-size:9pt;
+                text-overflow: ellipsis;
+            }
+            .light-grey-text{
+                color:#999;
+            }
+            .small-text{
+                font-size:10pt;
+            }
+            .xsmall-text{
+                font-size:9pt;
+            }
+            .pointer{
+                cursor:pointer;
+            }
+            .showmobile{
+                display:none !important;
+            }
+            .back-logo{
+                font-size:20pt;
+                color:#fff;
+                text-align: center;
+            }
+            /* Navbar style end*/
+            header{
+                background-color:#f3f3f3;
+                padding:7px 30px 7px 30px;
+            }
+            .timing-select-button{
+                background-color:#fff;
+                color:#2dc492;
+                border:1px solid #2dc492;
+                padding:4px 10px 4px 10px;
+                border-radius:3px;
+            }
+            .timing-select-button.active{
+                background-color:#2dc492;
+                color:#fff;
+            }
+            #ticket-date{
+                margin-bottom:5px;
+            }
+
+            /* Content */
+
+            .content{
+                padding:30px 140px 30px 140px;
+                font-size:10pt;
+            }
+            .row{
+                padding:2px;
+            }
+            .seat{
+                width: 10px !important;
+                height: 10px !important;
+                border:1px solid #eee;
+                border-radius: 26%;
+                color: #666;
+                padding:5px;
+                margin:2px;
+                text-align: center;
+            }
+            @media screen and (max-width:768px){
+                .nav-item-container:nth-child(2),.num-of-tickets{
+                    display:none !important;
+                }
+                .showmobile{
+                    display:block !important;
+                }
+                .showmobile.nav-item-container{
+                    display:inline-block !important;
+                }
+                .content{
+                    padding:5px;
+                    overflow-x:scroll;
+                }
+            }
+        </style>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    </head>
+
+    <body>
+        <nav>
+            <div class="left-nav-item">
+                <div class="nav-item-container"><a href="#back" class="fa fa-angle-left back-logo"></a></div>
+                <div class="nav-item-container">
+                    Gold <small>(U/A)</small><br>
+                    <small class="mallname light-grey-text"> INOX: Korum Mall, Eastern Express Highway, Thane</small>
+                </div>
+                <div class="showmobile nav-item-container" style="text-overflow:ellipsis !important;font-size:10pt;overflow:hidden;white-space: nowrap;width:80%;"><b> INOX: Korum Mall, Eastern Express Highway, Thane</b></div>
+            </div>
+            <div class="right-nav-item">
+                <div class="nav-item-container small-text num-of-tickets pointer" style="margin-right:40px;">2 Tickets <span class="fa fa-angle-down"></span></div>
+                <div class="nav-item-container"><span class="fa fa-close pointer"></span></div>
+            </div>
+        </nav>
+        <header>
+            <div class="light-grey-text xsmall-text" id="ticket-date">Tomorrow, 30 Aug, 01:00 PM</div>
+            <button class="timing-select-button"> 09:45 AM</button>
+            <button class="timing-select-button active"> 01:00 PM</button>
+            <button class="timing-select-button"> 04:00 PM</button>
+            <button class="timing-select-button"> 07:15 PM</button>
+        </header>
+        <div class="content">
+            <span class="light-grey-text">ROYAL-Rs. 160.00</span><br><hr>
+            <div class="seats" id="seats-royal"  seatrow="10" seatcol="5"></div>
+        </div>
+    
+    <script>   
+        let royal = document.getElementById("seats-royal");
+        let seatrow = Number(royal.getAttribute("seatrow"));
+        let seatcol = Number(royal.getAttribute("seatcol"));
+        let currentrow;
+        for(let i=0;i<seatrow;i++){
+            royal.innerHTML = royal.innerHTML + `<div class='row' id='row-${i}'><span class="light-grey-text">${String.fromCharCode(65+i)} &nbsp; &nbsp; </span></div>&nbsp;`;
+            currentrow = document.getElementById(`row-${i}`);
+            for(let j=0;j<seatcol;j++){
+                currentrow.innerHTML = currentrow.innerHTML + `<a class='seat pointer'>${j+1}</a>`;
+            }
+        }
+    </script>
+    </body>
+</html>
