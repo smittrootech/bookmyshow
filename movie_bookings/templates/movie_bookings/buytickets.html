@@ -17,8 +17,10 @@
                 right: 16px;
                 font-size: 18px;
               }
+            
+            m { margin-right: 25px;}
               
-
+        }
           
     </style>
     <h3 style="text-align:center;color:red"><span style="background-color:yellow;"> Booking for {{movie_name}} </span> <h3>
@@ -30,7 +32,7 @@
 {% load static %}
 
 
-{% for hall,time in context.items %}
+{% for hall,time_price in context.items %}
 
     <div class="jumbotron vertical-center">
         <div class="container d-md-flex text-center"> 
@@ -39,10 +41,12 @@
             </div>
 
             <div class="ml-auto">
-                        {% for t in  time%}  
-                        <button type="button" style="text-left" class="btn btn-outline-primary"> 
-                            <a href={% url 'booking_initialization' city_name t hall movie_name date %}> {{t}} </a>
-                        </button>
+                        {% for t_p in  time_price %} 
+                            {% for k, v in t_p.items %} 
+                                <button type="button" style="text-left" class="btn btn-outline-primary" id="{{movie_name}}_||_{{hall}}_||_{{v}}" value={{k}} onclick="getbookingdetail(this,modal)"> 
+                                  {{k}}
+                                </button>
+                        {% endfor %}
                         {% endfor %}  
             </div> 
             
@@ -51,23 +55,33 @@
     
 {% endfor %}
 <div id="modal_output"> </div>
+<div id="seats_count_modal"> </div>
 <script src="https://code.jquery.com/jquery-3.6.1.js" integrity="sha256-3zlB5s2uwoUzrXK3BT7AX3FyvojsraNFxCc2vC/7pNI=" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
  
 <script>
 
+    
+
+
     function modal_html_put(data,cinema_hall){
         let movies = Object.keys(data['data']);
         let abc=""  ;
+        console.log(movies)
         movies.forEach((movie) => {
             
-            time=data['data'][movie]    
-            dt="";
-            time.forEach((m) => { 
-                dt=dt+`<button type="button" "text-left" class="btn btn-outline-primary mx-1" id = "${movie}_||_${cinema_hall}" value="${m}" onclick="getbookingdetail(this)">${m}</button>`
-            })
-                 
+            let time=data['data'][movie]   
+            dt="";  
+            for (i=0;i<=time.length-1;i++){
+                let movie_time = Object.keys(time[i]);
+                movie_time.forEach((m) => {
+                  dt=dt+`<button type="button" "text-left" class="btn btn-outline-primary mx-1" id = "${movie}_||_${cinema_hall}_||_${time[i][m]}" value="${m}" onclick="getbookingdetail(this,modal)">${m}</button>`
+
+              })
+            }
+              
+    
             abc= abc +`
             
                 <div class="jumbotron vertical-center">
@@ -116,9 +130,7 @@
                         $("#modalLoginForm_"+cinema_hall).modal('show')
 
                        
-                       
-                        
-      
+    
                 },
                 error: function(){
                     alert("Not details found")
@@ -127,16 +139,82 @@
             
         }
 
-        function getbookingdetail(object){
+        modal=
+          `
+            <div class="modal" tabindex="-1" role="dialog" id="seats_count">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content" >
+                    <div class="modal-header">
+                      <h5 class="modal-title" style="text-align:center;">Select booking seats</h5>
+                    </div>
+                    <div style="background-color:#ADD8E6">
+                    <div class="form-group container  text-center my-5" >
+
+                        <div class="form-row">
+                      
+                          <div class="col-2">
+                            <input type="radio" class="form-check-input" id="1" name="bokking_count" placeholder="1">
+                            <label class="form-check-label" placeholder="1">1</label>
+                          </div>
+                      
+                          <div class="col-2">
+                            <input type="radio" class="form-check-input" name="bokking_count" id="2">
+                            <label class="form-check-label">2</label>
+                          </div>
+                      
+                          <div class="col-2">
+                            <input type="radio" class="form-check-input" name="bokking_count" id="3">
+                            <label class="form-check-label">3</label>
+                          </div>
+                      
+                          <div class="col-2">
+                            <input type="radio" class="form-check-input"  name="bokking_count" id="4">
+                            <label class="-form-check-label">4</label>
+                          </div>
+
+                          <div class="col-2">
+                            <input type="radio" class="form-check-input" name="bokking_count" id="5">
+                            <label class="-form-check-label">5</label>
+                          </div>
+
+                      
+                        </div>
+                      </div>
+                    </div>
+                    <div class="modal-footer justify-content-center">
+                      <button type="button" class="btn btn-primary  disabled">price</button>                    </div>
+                  </div>
+                </div>
+              </div>
+            `
+            
+
+        function getbookingdetail(object,modal){
             id=object.getAttribute('id').split("_||_")
             movie_name=id[0]
             cinema_hall=id[1]
+            price=id[2]
             value=object.getAttribute('value')
             city_id="{{city}}"
             date="{{date}}"
-            window.location.href='http://127.0.0.1:8000/movies/booking_initialization/'+city_id+'/'+value+'/'+cinema_hall+'/'+movie_name+'/'+date+'/'
+
+            modal=modal.replace('price',price)
+            $("#seats_count_modal").html(modal);
+            $("#modalLoginForm_"+cinema_hall).modal('toggle')
+            $("#seats_count").modal('show')
             
+            $('input[type="radio"]').change(function(){ 
+
+                var total_seats_bookig=$('input[type="radio"]:checked').attr('id')
+                window.location.href='http://127.0.0.1:8000/movies/booking_initialization/'+city_id+'/'+value+'/'+cinema_hall+'/'+movie_name+'/'+date+'/'+total_seats_bookig+'/'
+
+
+            });  
+
+                        
         }
+
+           
 
 </script>
 

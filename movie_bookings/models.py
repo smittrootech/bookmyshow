@@ -7,6 +7,7 @@ import datetime as datetime
 from django.core.exceptions import ValidationError
 
 from django.utils.translation import gettext_lazy as _
+from django.contrib.postgres.fields import ArrayField
 
 
 # Create your models here.
@@ -64,10 +65,10 @@ class Show(models.Model):
     cinema_hall= models.ForeignKey(CinemaHall,on_delete=models.CASCADE,related_name='show_in_cinema', blank=True,null=True)
     movie=models.ForeignKey(Movies,on_delete=models.CASCADE,related_name='movie', blank=True,null=True)
     city=models.ForeignKey(City,on_delete=models.CASCADE,related_name='city_name', blank=True,null=True)
-
+    price=models.FloatField(default=0)
 
     def __str__(self):
-        return str(self.start_time)
+        return str(self.date)+ " " +str(self.start_time)
 
     def save(self, *args, **kwargs):
 
@@ -106,12 +107,13 @@ class CinemaSeats(models.Model):
         Silver = 'Silver', _('Silver')
 
     seatnumber=models.IntegerField(default=0)
+    booked_seats = ArrayField(models.CharField(max_length=200), blank=True,null=True)
     type=models.CharField(max_length=20,choices=SeatType.choices)
     cinema_hall= models.ForeignKey(CinemaHall,on_delete=models.CASCADE,related_name='cinema_hall',null=True,blank=True)
     movie_name=models.ForeignKey(Movies,on_delete=models.CASCADE,related_name='selected_movie',null=True,blank=True)
     show_time=models.ForeignKey(Show,on_delete=models.CASCADE,related_name='selected_movie_show_time',null=True,blank=True)
     city=models.ForeignKey(City,on_delete=models.CASCADE,related_name='city_name_for_booking', blank=True,null=True)
-    date=models.ForeignKey(Show,on_delete=models.CASCADE,related_name='booked_movie_date', blank=True,null=True)
+    final_price=models.FloatField(default=0)
 
     def __str__(self):
-        return str(self.seatnumber)
+        return str(self.movie_name)

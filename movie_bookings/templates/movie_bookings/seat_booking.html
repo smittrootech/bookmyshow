@@ -8,6 +8,9 @@
                 margin:0px;
                 font-family:Roboto,sans-serif
             }
+            .btn-outline-primary:disabled {
+                background-color:red
+              }
             a{
                 text-decoration:none;
             }
@@ -116,38 +119,60 @@
                     padding:5px;
                     overflow-x:scroll;
                 }
+                
             }
+
+            button[name=seat_allocation] 
+                {
+                background-color: #FA0000;
+            }
+            
+              
         </style>
+
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">    <title>Django People</title>
+
     </head>
 
     <body>
+
+        <script src="https://code.jquery.com/jquery-3.6.1.js" integrity="sha256-3zlB5s2uwoUzrXK3BT7AX3FyvojsraNFxCc2vC/7pNI=" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+ 
         <nav>
             <div class="left-nav-item">
                 <div class="nav-item-container"><a href="#back" class="fa fa-angle-left back-logo"></a></div>
                 <div class="nav-item-container">
-                    Gold <small>(U/A)</small><br>
-                    <small class="mallname light-grey-text"> INOX: Korum Mall, Eastern Express Highway, Thane</small>
+                    {{movie_name}} <small>(U/A)</small><br>
+                    <small class="mallname light-grey-text"> {{cinema_hall}}</small>
                 </div>
                 <div class="showmobile nav-item-container" style="text-overflow:ellipsis !important;font-size:10pt;overflow:hidden;white-space: nowrap;width:80%;"><b> INOX: Korum Mall, Eastern Express Highway, Thane</b></div>
             </div>
             <div class="right-nav-item">
-                <div class="nav-item-container small-text num-of-tickets pointer" style="margin-right:40px;">2 Tickets <span class="fa fa-angle-down"></span></div>
+                <div class="nav-item-container small-text num-of-tickets pointer" style="margin-right:40px;">{{total_seats_bookig}} tickets<span class="fa fa-angle-down"></span></div>
                 <div class="nav-item-container"><span class="fa fa-close pointer"></span></div>
             </div>
         </nav>
         <header>
-            <div class="light-grey-text xsmall-text" id="ticket-date">Tomorrow, 30 Aug, 01:00 PM</div>
-            <button class="timing-select-button"> 09:45 AM</button>
+            <div class="light-grey-text xsmall-text" id="ticket-date">{{date}},{{time}}</div>
+            {% comment %} <button class="timing-select-button"> 09:45 AM</button>
             <button class="timing-select-button active"> 01:00 PM</button>
             <button class="timing-select-button"> 04:00 PM</button>
-            <button class="timing-select-button"> 07:15 PM</button>
+            <button class="timing-select-button"> 07:15 PM</button> {% endcomment %}
         </header>
         <div class="content">
-            <span class="light-grey-text">ROYAL-Rs. 160.00</span><br><hr>
-            <div class="seats" id="seats-royal"  seatrow="10" seatcol="5"></div>
+            <span class="light-grey-text">{{price}}</span><br><hr>
+            <div class="seats" id="seats-royal"  seatrow={{total_rows}} seatcol="10"></div>
+            <div class="container "id="amount_to_pay" >
+
+            </div>
+            
+           
         </div>
-    
+
+        
     <script>   
         let royal = document.getElementById("seats-royal");
         let seatrow = Number(royal.getAttribute("seatrow"));
@@ -157,9 +182,106 @@
             royal.innerHTML = royal.innerHTML + `<div class='row' id='row-${i}'><span class="light-grey-text">${String.fromCharCode(65+i)} &nbsp; &nbsp; </span></div>&nbsp;`;
             currentrow = document.getElementById(`row-${i}`);
             for(let j=0;j<seatcol;j++){
-                currentrow.innerHTML = currentrow.innerHTML + `<a class='seat pointer'>${j+1}</a>`;
+                currentrow.innerHTML = currentrow.innerHTML + `<button type="button" class="btn btn-outline-primary" id='${String.fromCharCode(65+i)}-${j}' name="seats_allocation" onclick="selected_seats(this)">${j+1}<button>`;
             }
         }
+
+    
+
+    list = {{ total_seats_booked | safe }}
+
+    console.log(list.length)
+    
+    list.forEach((booked_seat)=>{
+    
+        $("#"+booked_seat).prop( "disabled", true )
+        $("#"+booked_seat).css('background-color', 'red')
+
+    })
+
+ 
+
+    function selected_seats(object){
+        
+        $('button[name=seats_allocation]').css({"background-color": "white"});
+
+        list = {{ total_seats_booked | safe }}
+    
+        list.forEach((booked_seat)=>{
+        
+            $("#"+booked_seat).prop( "disabled", true )
+            $("#"+booked_seat).css('background-color', 'red')
+    
+        })
+        
+        total_seats={{total_seats_bookig}}
+        selected_seat=object.getAttribute('id')
+        selected_total_seats=[]
+        check_seat_number=selected_seat.split("-")
+        appending_seats= check_seat_number[0]
+        selected_seat_number=parseInt(check_seat_number[1])
+        city_name= "{{city_name}}"
+        time="{{time}}"
+        cinema_hall="{{cinema_hall}}"
+        movie_name="{{movie_name}}"
+        date="{{date}}"
+        total_seats_bookig="{{total_seats_bookig}}"
+      
+
+        for(let i=selected_seat_number;i<selected_seat_number+total_seats;i++){
+            
+            if (!$("#"+appending_seats+"-"+(i)).attr('disabled')){
+                selected_total_seats.push(appending_seats+"-"+i)
+                
+            }
+            else{
+                break
+                
+            } 
+
+        }
+        
+        selected_total_seats.forEach((seat)=>
+            $("#"+seat).css('background-color', 'green'));
+
+        payable_amount={{price}}*{{total_seats_bookig}}
+
+        
+
+        if (selected_total_seats.length==total_seats){
+                $("#amount_to_pay").html(` <button type="button" class="btn btn-info text-center" id="submit_data">Total Payable ${payable_amount}</a></button>`)
+        
+
+        $("#submit_data").click(function(){
+            
+                $.ajax({
+                    type: 'post',
+                    contentType: "json",
+                    data:JSON.stringify({city_name:city_name,time:time,hall:cinema_hall,movie:movie_name,date:date,total_seats_bookig:total_seats_bookig,payable_amount:payable_amount,selected_total_seats:selected_total_seats}),
+                    url: "{% url 'ticket_booking' %}",
+                    success: function (data, status, xhr) {
+                        alert("tickets booked")
+                        {% comment %} window.location.href='http://127.0.0.1:8000/movies/booking_completed/'+city_name+'/'+cinema_hall+'/'+movie_name+'/'+date+" "+time+'/' {% endcomment %}
+
+                    },
+                    error: function(){
+                        alert("Not details found")
+                    }
+                })
+            });
+        }
+
+      
+
+        
+    }
+    
+  
+
+    
+  
     </script>
     </body>
+
+    
 </html>
