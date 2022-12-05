@@ -3,6 +3,13 @@ from django.shortcuts import render
 from django.shortcuts import redirect
 
 from django.utils.decorators import method_decorator
+from django.db.models import CharField
+from django.db.models.functions import Lower
+
+from django.views.generic.base import TemplateView
+
+CharField.register_lookup(Lower)
+
 
 
 from .models import Movies,Show
@@ -20,6 +27,14 @@ from django.shortcuts import render
 from .forms import MoviesDetailForm,SeatBooking
 
 
+class AllMovies(View):
+    def get(self, request):
+        print(request.user)
+        upcoming_movies=Movies.objects.filter(release_date__gte=datetime.datetime.now())
+        current_movies=Movies.objects.filter(release_date__lte=datetime.datetime.now())
+        return render(request,'movie_bookings/bookmyshow.html',{"current_movies":current_movies,"upcoming_movies":upcoming_movies})
+
+
 def upload_file(request):
     if request.method == 'POST':
         form = MoviesDetailForm(request.POST, request.FILES)
@@ -33,7 +48,8 @@ def upload_file(request):
 
 class MovieListView(View):
     def get(self, request,city_id):
-        movies=Movies.objects.filter(city__id=city_id)
+        
+        movies=Movies.objects.filter(city__name=city_id)
         date= datetime.datetime.now().date()
         return render(request,'movie_bookings/movies_list.html',{"object_list":movies,"city_id":city_id,"date":str(date)})
 
@@ -41,8 +57,9 @@ class MovieListView(View):
 class MoviesShows(View):
      def get(self, request, movie_id,city_id,date):
         try:
-            abc=Show.objects.filter(movie__id=movie_id).filter(city__id=city_id,date=date)
+            abc=Show.objects.filter(movie__id=movie_id).filter(city__name=city_id,date=date)
             movie_name,city_name=(abc.first().movie.title,abc.first().city.name)
+           
             shows={}
             for i in abc:
                 if i.cinema_hall.name not in shows:
@@ -61,17 +78,18 @@ def is_ajax(request):
 
 class TheatreShows(View):
     def get(self, request,cinema_hall,city_id,date):
-        if is_ajax(request=request):
-            print("abc")
-            current_movies=Show.objects.filter(cinema_hall__name=cinema_hall).filter(city__id=city_id,date=date)
-            shows={}
-            for i in current_movies:
-                if i.movie.title not in shows:
-                    shows[i.movie.title] = [{str(i.start_time):str(i.price)}]
-                else:
-                    shows[i.movie.title] += [{str(i.start_time):str(i.price)}]
-       
-            return JsonResponse({'data':shows}, safe=False)
+        # if is_ajax(request=request):
+        print("abc")
+        current_movies=Show.objects.filter(cinema_hall__name=cinema_hall
+        ).filter(city__name=city_id,date=date)
+        shows={}
+        for i in current_movies:
+            if i.movie.title not in shows:
+                shows[i.movie.title] = [{str(i.start_time):str(i.price)}]
+            else:
+                shows[i.movie.title] += [{str(i.start_time):str(i.price)}]
+    
+        return JsonResponse({'data':shows}, safe=False)
 
 class BookingInit(View):
 
@@ -97,36 +115,65 @@ class BookingInit(View):
         show=Show.objects.get(start_time=time,date=date,cinema_hall__name=hall,movie__title=movie_name)
         return render(request, 'movie_bookings/seat_booking.html', {'city_name': city_name,"time":time,"cinema_hall":hall,"movie_name":movie_name,"date":date,"total_seats_bookig":total_seats_bookig,"price":show.price,"total_rows":cinema_hall.total_seats//10,'total_seats_booked':total_seats_booked})
 
+class SearchCity(View):
+
+    def get(self,request,city_name):
+        
+        search_result=city_name=City.objects.filter(name__icontains=city_name.lower())
+        search_result=[i.name for i in search_result]
+        return JsonResponse({'search_result':search_result}, safe=False)
 
 
 class BookSeats(View):
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super(BookSeats, self).dispatch(request, *args, **kwargs)
-
+  
     def post(self,request):
-        if is_ajax(request=request):
-            data=json.load(request)
-            city_name=data['city_name']
-            time=data['time']
-            cinema_hall=data['hall']
-            movie_name=data['movie']
-            date=data['date']
-            total_seats_bookig=data['total_seats_bookig']
-            payable_amount=data['payable_amount']
-            selected_total_seats=data['selected_total_seats']
+        # if is_ajax(request=request):
+        # import pdb;pdb.set_trace()
+        # print(">>>>>>>",request)
+        data=json.load(request)
+        city_name=data['city_name']
+        time=data['time']
+        cinema_hall=data['hall']
+        movie_name=data['movie']
+        date=data['date']
+        total_seats_bookig=data['total_seats_bookig']
+        payable_amount=data['payable_amount']
+        selected_total_seats=data['selected_total_seats']
+        amount_paid=data["is_paid"]
+        total_seats_bookig =total_seats_bookig
+        print("<<<>>>>>>>>",selected_total_seats)
 
-            total_seats_bookig =total_seats_bookig
+        if not isinstance(selected_total_seats,list):
+            selected_total_seats=selected_total_seats.split(",")
+        try:
+            city_name=City.objects.filter(id=city_name).first().name
+        except:
+            pass
+        city_name=City.objects.get(name=city_name)
+        cinema_hall=CinemaHall.objects.get(name=cinema_hall,city__name=city_name)
+        movie_name=Movies.objects.get(title=movie_name)
+        show_time=Show.objects.get(start_time=time,date=date,cinema_hall__name=cinema_hall)
+        
+        print(selected_total_seats)
 
-            
-            try:
-                city_name=City.objects.filter(id=city_name).first().name
-            except:
-                pass
-            city_name=City.objects.get(name=city_name)
-            cinema_hall=CinemaHall.objects.get(name=cinema_hall,city__name=city_name)
-            movie_name=Movies.objects.get(title=movie_name)
-            show_time=Show.objects.get(start_time=time,date=date,cinema_hall__name=cinema_hall)
+        if amount_paid:
+            print("update")
+            events = CinemaSeats.objects.filter(seatnumber=total_seats_bookig,type="GOLD",show_time=show_time,cinema_hall=cinema_hall,movie_name=movie_name,city=city_name,final_price=payable_amount,booked_seats=selected_total_seats)
+            events.update(amount_paid=True)
+        
+        
+        elif selected_total_seats[1]=="Revert_seats":
+            selected_total_seats=selected_total_seats[0].split(",")
+            print(selected_total_seats)
+            print("delete")
+            events = CinemaSeats.objects.filter(seatnumber=total_seats_bookig,type="GOLD",show_time=show_time,cinema_hall=cinema_hall,movie_name=movie_name,city=city_name,final_price=payable_amount,booked_seats=selected_total_seats)
+            events.delete()
+
+        else:
+            print("else")
             cinema_booking=CinemaSeats(seatnumber=total_seats_bookig,type="GOLD",show_time=show_time,cinema_hall=cinema_hall,movie_name=movie_name,city=city_name,final_price=payable_amount,booked_seats=selected_total_seats)
             cinema_booking.save()
             obj = Show.objects.get(cinema_hall__name=cinema_hall,movie__title=movie_name,start_time=str(show_time.start_time),city__name=city_name,date=date)
@@ -135,27 +182,21 @@ class BookSeats(View):
             obj.total_seats=obj.total_seats-booked_seats
             obj.save()
 
-            return JsonResponse(data,safe=False)
-            
-#  class Completebooking(View):
-#      def get(self,request,city_name,hall,movie_name,bookig_date):
-        
-#         try:
-#                 city_name=City.objects.filter(id=city_name).first().name
-#         except:
-#                 pass
-#         city_name=City.objects.get(name=city_name) 
-#         date_time=bookig_date.split(" ")
-#         date=date_time[0]
-#         time=date_time[1]
-#         show_time=Show.objects.get(start_time=time,date=date,cinema_hall__name=hall)
+        return JsonResponse(data,safe=False)
 
-#         cinema_booking=CinemaSeats.objects.filter(show_time=show_time,cinema_hall__name=hall,movie_name__title=movie_name,city__name=city_name)
+    def get(self,request):
 
-#         seats=[(i.booked_seats) for i in cinema_booking]
-#         total_seats_booked=list(itertools.chain.from_iterable(seats))
-        
-#         return render(request, 'movie_bookings/seat_booking.html', {'city_name': city_name,"time":time,"cinema_hall":hall,"movie_name":movie_name,"date":date,"total_seats_bookig":cinema_booking,'total_seats_booked':total_seats_booked, "price":show.price,"total_rows":show.total_seats//10})
+        city_name=request.GET.get('city_name')
+        time=request.GET.get('time')
+        cinema_hall=request.GET.get('cinema_hall')
+        movie_name=request.GET.get('movie_name')
+        date=request.GET.get('date')
+        total_seats_bookig=request.GET.get('total_seats_bookig')
+        payable_amount=int(request.GET.get('payable_amount'))
+        selected_total_seats=request.GET.get('selected_total_seats')
+        current_time=request.GET.get('current_time')
+        print(payable_amount)
+        convenience_fees= int((0.18)*payable_amount) + payable_amount
 
-
+        return render(request,'movie_bookings/payment_page.html',{"city_name":city_name,"selected_total_seats":selected_total_seats,"payable_amount":payable_amount,"convenience_fees":convenience_fees,"time":time,"cinema_hall":cinema_hall,"movie_name":movie_name,"date":date,"total_seats_bookig":total_seats_bookig,"current_time":current_time})
 

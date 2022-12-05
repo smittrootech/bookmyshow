@@ -7,7 +7,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-    <title>Django People</title>
+    <title>BookMyShow</title>
     <style>
         .card-img-top {
             width: 100%;
@@ -33,10 +33,12 @@
 {% load static %}
 <div>
     
+    
     <div class=" container my-3">
+        <h3 class="my-3 text-left"> Current Movies </h3>
         <div class="scrollmenu">
             <div class="row">
-                {% for object in object_list %}  
+                {% for object in current_movies %}  
                 <div class="col-3" style="overflow-h: scroll;">
                         <div class="card-group">
                             <div class="card" id={{object.id}} onclick="moviedetail({{object.id}})">
@@ -54,9 +56,36 @@
         </div>
     <div>
 </div>
-<script src="https://code.jquery.com/jquery-3.6.1.js" integrity="sha256-3zlB5s2uwoUzrXK3BT7AX3FyvojsraNFxCc2vC/7pNI=" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+<div>
+    
+    
+    <div class=" container my-3">
+    <h3 class="my-3"> Upcoming Movies </h3>
+        <div class="scrollmenu">
+            <div class="row">
+                {% for object in upcoming_movies %}  
+                <div class="col-3" style="overflow-h: scroll;">
+                        <div class="card-group">
+                            <div class="card" id={{object.id}} onclick="moviedetail({{object.id}})">
+                                <img src="{% static object.movie_image %}" class="card-img-top" alt="..."/>
+                                <div class="card-body">
+                                <h5 class="card-title text-center" >{{object.title}}</h5>
+                                <p class="card-text text-center">{{object.description}}</p>
+                                <p class="card-text text-center">{{object.genre}}</p>
+                                <p class="card-text text-center">{{object.release_date}}</p>
+                                </div>
+                            </div>  
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    <div>
+</div>
+    <script src="https://code.jquery.com/jquery-3.6.1.js" integrity="sha256-3zlB5s2uwoUzrXK3BT7AX3FyvojsraNFxCc2vC/7pNI=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 
 
 
@@ -64,7 +93,6 @@
     
    
     function moviedetail(movie_id){
-        
         date="{{date}}"
         city_id="{{city_id}}"
         location.href = 'http://127.0.0.1:8000/movies/MovieShows/' + movie_id +'/'+ city_id +'/' + date + '/' ;

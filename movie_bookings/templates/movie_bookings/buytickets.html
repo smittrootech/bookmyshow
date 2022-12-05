@@ -1,33 +1,155 @@
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">    <title>Django People</title>
-
-    <style>
-        .vertical-center {
-            min-height: 50%;  
-            min-height: 50; 
-          
-            display: flex;
-            align-items: center;
-
-            .topright {
-                position: absolute;
-                top: 8px;
-                right: 16px;
-                font-size: 18px;
-              }
-            
-            m { margin-right: 25px;}
-              
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Select Seat</title>
+  <style>
+      html,body{
+          margin:0px;
+          font-family:Roboto,sans-serif
+      }
+      .btn-outline-primary:disabled {
+          background-color:red
         }
-          
-    </style>
-    <h3 style="text-align:center;color:red"><span style="background-color:yellow;"> Booking for {{movie_name}} </span> <h3>
-    <h6 style="position: absolute; top: 5px; right: 10px; text-align: right; "><span> {{city_name}} </span> <h6>
+      a{
+          text-decoration:none;
+      }
+      button:hover{
+          cursor:pointer;
+      }
+      hr{
+          border:.5px solid #eee;
+          margin-top:10px;
+          margin-bottom:10px;
+      }
+      nav{
+          background-color:#1f2533;
+          padding:15px;
+          color:#fff;
+      }
+      nav  .nav-item-container{
+          display: inline-block;
+          margin-right:20px;
+          vertical-align:middle;
+          /* float:left; */
+      }
+      .left-nav-item{
+          display:inline-block;
+          position:relative;
+          vertical-align:middle !important;
+      }
+      .right-nav-item{
+          float:right !important;
+          margin-top:9px;
+      }
+      .mallname{
+          font-size:9pt;
+          text-overflow: ellipsis;
+      }
+      .light-grey-text{
+          color:#999;
+      }
+      .small-text{
+          font-size:10pt;
+      }
+      .xsmall-text{
+          font-size:9pt;
+      }
+      .pointer{
+          cursor:pointer;
+      }
+      .showmobile{
+          display:none !important;
+      }
+      .back-logo{
+          font-size:20pt;
+          color:#fff;
+          text-align: center;
+      }
+      /* Navbar style end*/
+      header{
+          background-color:#f3f3f3;
+          padding:7px 30px 7px 30px;
+      }
+      .timing-select-button{
+          background-color:#fff;
+          color:#2dc492;
+          border:1px solid #2dc492;
+          padding:4px 10px 4px 10px;
+          border-radius:3px;
+      }
+      .timing-select-button.active{
+          background-color:#2dc492;
+          color:#fff;
+      }
+      #ticket-date{
+          margin-bottom:5px;
+      }
 
-    </head>
+      /* Content */
+
+      .content{
+          padding:30px 140px 30px 140px;
+          font-size:10pt;
+      }
+      .row{
+          padding:2px;
+      }
+      .seat{
+          width: 10px !important;
+          height: 10px !important;
+          border:1px solid #eee;
+          border-radius: 26%;
+          color: #666;
+          padding:5px;
+          margin:2px;
+          text-align: center;
+      }
+      @media screen and (max-width:768px){
+          .nav-item-container:nth-child(2),.num-of-tickets{
+              display:none !important;
+          }
+          .showmobile{
+              display:block !important;
+          }
+          .showmobile.nav-item-container{
+              display:inline-block !important;
+          }
+          .content{
+              padding:5px;
+              overflow-x:scroll;
+          }
+          
+      }
+
+      button[name=seat_allocation] 
+          {
+          background-color: #FA0000;
+      }
+      
+        
+  </style>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">    <title>Django People</title>
+
+</head>
+
 <body>
+
+  <script src="https://code.jquery.com/jquery-3.6.1.js" integrity="sha256-3zlB5s2uwoUzrXK3BT7AX3FyvojsraNFxCc2vC/7pNI=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+  <nav>
+      <div class="left-nav-item">
+          <div class="nav-item-container"><a href="#back" class="fa fa-angle-left back-logo"></a></div>
+          <div class="nav-item-container">
+              {{movie_name}} <small>(U/A)</small><br>
+          </div>
+          </div>
+        </div>
+  </nav>
+  
+  </header>
 
 {% load static %}
 
@@ -129,8 +251,6 @@
             
                         $("#modalLoginForm_"+cinema_hall).modal('show')
 
-                       
-    
                 },
                 error: function(){
                     alert("Not details found")
@@ -210,12 +330,8 @@
 
 
             });  
-
-                        
+ 
         }
-
-           
-
 </script>
 
 </body> 

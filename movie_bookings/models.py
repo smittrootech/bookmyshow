@@ -114,6 +114,7 @@ class CinemaSeats(models.Model):
     show_time=models.ForeignKey(Show,on_delete=models.CASCADE,related_name='selected_movie_show_time',null=True,blank=True)
     city=models.ForeignKey(City,on_delete=models.CASCADE,related_name='city_name_for_booking', blank=True,null=True)
     final_price=models.FloatField(default=0)
+    amount_paid=models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.movie_name)

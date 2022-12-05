@@ -74,7 +74,7 @@
             .timing-select-button{
                 background-color:#fff;
                 color:#2dc492;
-                border:1px solid #2dc492;
+                border:1px solid #2dc492;ts
                 padding:4px 10px 4px 10px;
                 border-radius:3px;
             }
@@ -149,11 +149,7 @@
                     <small class="mallname light-grey-text"> {{cinema_hall}}</small>
                 </div>
                 <div class="showmobile nav-item-container" style="text-overflow:ellipsis !important;font-size:10pt;overflow:hidden;white-space: nowrap;width:80%;"><b> INOX: Korum Mall, Eastern Express Highway, Thane</b></div>
-            </div>
-            <div class="right-nav-item">
-                <div class="nav-item-container small-text num-of-tickets pointer" style="margin-right:40px;">{{total_seats_bookig}} tickets<span class="fa fa-angle-down"></span></div>
-                <div class="nav-item-container"><span class="fa fa-close pointer"></span></div>
-            </div>
+            </div> 
         </nav>
         <header>
             <div class="light-grey-text xsmall-text" id="ticket-date">{{date}},{{time}}</div>
@@ -162,154 +158,56 @@
             <button class="timing-select-button"> 04:00 PM</button>
             <button class="timing-select-button"> 07:15 PM</button> {% endcomment %}
         </header>
-        <div class="content">
-            <span class="light-grey-text">{{price}}</span><br><hr>
-            <div class="seats" id="seats-royal"  seatrow={{total_rows}} seatcol="10"></div>
-            <div class="container "id="amount_to_pay" >
-
+        <div class="container mr-5 my-5">
+        <div class="card border-primary mb-3" style="width: 50rem;">
+            <div class="card-body">
+              <h5 class="card-title" style="color:red">Booking Summary</h5>
+              <p class="card-text float-left">{{selected_total_seats}} ({{total_seats_bookig}} Tickets)</p>
+              <p class="card-text float-right">{{payable_amount}}</p>
+              <br><br>
+              <p class="card-text float-left">convenience_fees</p>
+              {% widthratio payable_amount 1 -1 as result%}
+              <p class="card-text float-right">{{result|add:convenience_fees}}</p>
+              <br><br>
+              <hr>
+              <p class="card-text float-left">Sub Total</p>
+              <p class="card-text float-right">{{convenience_fees}}</p>
+              <br><br><br>
+              <p class="card-text float-left">Payable Amount</p>
+              <p class="card-text float-right">{{convenience_fees}}</p>
+              <br><br><hr>
+              <a  class="btn btn-primary" id="submit_data">Proceed</a>
             </div>
-            
-           
         </div>
+        </div>
+        <script>
 
-        
-    <script>   
-        let royal = document.getElementById("seats-royal");
-        let seatrow = Number(royal.getAttribute("seatrow"));
-        let seatcol = Number(royal.getAttribute("seatcol"));
-        let currentrow;
-        for(let i=0;i<seatrow;i++){
-            royal.innerHTML = royal.innerHTML + `<div class='row' id='row-${i}'><span class="light-grey-text">${String.fromCharCode(65+i)} &nbsp; &nbsp; </span></div>&nbsp;`;
-            currentrow = document.getElementById(`row-${i}`);
-            for(let j=0;j<seatcol;j++){
-                currentrow.innerHTML = currentrow.innerHTML + `<button type="button" class="btn btn-outline-primary" id='${String.fromCharCode(65+i)}-${j}' name="seats_allocation" onclick="selected_seats(this)">${j+1}<button>`;
-            }
-        }
-
-    
-
-    list = {{ total_seats_booked | safe }}
-
-    console.log(list.length)
-    
-    list.forEach((booked_seat)=>{
-    
-        $("#"+booked_seat).prop( "disabled", true )
-        $("#"+booked_seat).css('background-color', '#808080')
-
-    })
-
- 
-
-    function selected_seats(object){
-        
-        $('button[name=seats_allocation]').css({"background-color": "white"});
-
-        list = {{ total_seats_booked | safe }}
-    
-        list.forEach((booked_seat)=>{
-        
-            $("#"+booked_seat).prop( "disabled", true )
-            $("#"+booked_seat).css('background-color', '#808080')
-    
-        })
-        
-        total_seats={{total_seats_bookig}}
-        selected_seat=object.getAttribute('id')
-        selected_total_seats=[]
-        check_seat_number=selected_seat.split("-")
-        appending_seats= check_seat_number[0]
-        selected_seat_number=parseInt(check_seat_number[1])
-        city_name= "{{city_name}}"
-        time="{{time}}"
-        cinema_hall="{{cinema_hall}}"
-        movie_name="{{movie_name}}"
-        date="{{date}}"
-        total_seats_bookig="{{total_seats_bookig}}"
-      
-
-        for(let i=selected_seat_number;i<selected_seat_number+total_seats;i++){
-            
-            if (!$("#"+appending_seats+"-"+(i)).attr('disabled')){
-                selected_total_seats.push(appending_seats+"-"+i)
-                
-            }
-            else{
-                break
-                
-            } 
-
-        }
-        
-        selected_total_seats.forEach((seat)=>
-            $("#"+seat).css('background-color', 'green'));
-
-        payable_amount={{price}}*{{total_seats_bookig}}
-
-        
-
-        if (selected_total_seats.length==total_seats){
-                $("#amount_to_pay").html(` <button type="button" class="btn btn-info text-center" id="submit_data">Total Payable ${payable_amount}</a></button>`)
-        
-
-        $("#submit_data").click(function(){
-            
-                $.ajax({
-                    type: 'post',
-                    dataType: "json",
-                    data:JSON.stringify({city_name:city_name,time:time,hall:cinema_hall,movie:movie_name,date:date,total_seats_bookig:total_seats_bookig,payable_amount:payable_amount,selected_total_seats:selected_total_seats,"is_paid":false}),
-                    url: "{% url 'ticket_booking' %}",
-                    success: function (data, status, xhr) {
-
-                        var current = new Date();
-
-                        list = {{ total_seats_booked | safe }}
-    
-                                list.forEach((booked_seat)=>{
-                                
-                                    $("#"+booked_seat).prop( "disabled", true )
-                                    $("#"+booked_seat).css('background-color', '#808080')
-                            
-                        })
-
-
+        function ajax_call(total_seats_booked,is_paid){
+            $.ajax({
+                type: 'post',
+                dataType: "json",
+                data:JSON.stringify({city_name:"{{city_name}}",time:"{{time}}",hall:"{{cinema_hall}}",movie:"{{movie_name}}",date:"{{date}}",total_seats_bookig:"{{total_seats_bookig}}",payable_amount:"{{payable_amount}}",selected_total_seats:total_seats_booked,"is_paid":is_paid}),
+                url: "{% url 'ticket_booking' %}",
+                success: function (data, status, xhr) {
                         
-                        let url = new URL('http://127.0.0.1:8000/movies/ticket_booking/')
-                        
-                        url.searchParams.append('city_name', city_name);
-                        url.searchParams.append('time', time);
-                        url.searchParams.append('cinema_hall', cinema_hall);
-                        url.searchParams.append('movie_name', movie_name);
-                        url.searchParams.append('date', date);
-                        url.searchParams.append('total_seats_bookig', total_seats_bookig);
-                        url.searchParams.append('payable_amount', payable_amount);
-                        url.searchParams.append('selected_total_seats', selected_total_seats);
-                        url.searchParams.append('current_time', current.toLocaleTimeString());
-
-                        console.log(url)
-                        window.location.href=url
-
-
-
-                    },
-                    error: function(){
-                        alert("Not details found")
-                    }
+                    location.href='http://127.0.0.1:8000/movies/booking_initialization/'+"{{city_name}}"+'/'+"{{time}}"+'/'+"{{cinema_hall}}"+'/'+"{{movie_name}}"+'/'+"{{date}}"+'/'+"{{total_seats_bookig}}"+'/'
+                },
+                error: function(){
+                    alert("Not details found")
+                }
                 })
+            }
+            
+            total_seats_booked="{{selected_total_seats}}"
+                    setTimeout(() => {
+                    Revert_flag=["Revert_seats"]
+                    total_seats_booked=[total_seats_booked].concat(Revert_flag)
+                    ajax_call(total_seats_booked,false)
+            }, "5000") 
+
+            $("#submit_data").click(function(){
+                ajax_call(total_seats_booked,true)
             });
-        }
+        </script>
 
-      
-
-        
-    }
-    
-  
-
-    
-  
-    </script>
     </body>
-
-    
-</html>
