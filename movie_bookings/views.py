@@ -9,7 +9,7 @@ from django.db.models.functions import Lower
 from django.views.generic.base import TemplateView
 
 CharField.register_lookup(Lower)
-
+from django.db.models import Q
 
 
 from .models import Movies,Show
@@ -57,7 +57,10 @@ class MovieListView(View):
 class MoviesShows(View):
      def get(self, request, movie_id,city_id,date):
         try:
-            abc=Show.objects.filter(movie__id=movie_id).filter(city__name=city_id,date=date)
+            try:
+                abc=Show.objects.filter(movie__id=movie_id).filter(city__name=city_id,date=date)
+            except:
+                abc=Show.objects.filter(movie__title=movie_id).filter(city__name=city_id,date=date)
             movie_name,city_name=(abc.first().movie.title,abc.first().city.name)
            
             shows={}
@@ -69,7 +72,8 @@ class MoviesShows(View):
             print(date)
             return render(request,'movie_bookings/buytickets.html',{'context':shows,'city':city_id ,'movie_name':movie_name ,'city_name':city_name,'date':str(date)})
 
-        except:
+        except Exception as e:
+            print(e)
             return redirect('movies_in_city', city_id=city_id)
         
         
@@ -144,7 +148,6 @@ class BookSeats(View):
         selected_total_seats=data['selected_total_seats']
         amount_paid=data["is_paid"]
         total_seats_bookig =total_seats_bookig
-        print("<<<>>>>>>>>",selected_total_seats)
 
         if not isinstance(selected_total_seats,list):
             selected_total_seats=selected_total_seats.split(",")

@@ -199,8 +199,6 @@
 
     })
 
- 
-
     function selected_seats(object){
         
         $('button[name=seats_allocation]').css({"background-color": "white"});
@@ -272,8 +270,6 @@
                             
                         })
 
-
-                        
                         let url = new URL('http://127.0.0.1:8000/movies/ticket_booking/')
                         
                         url.searchParams.append('city_name', city_name);
@@ -289,8 +285,6 @@
                         console.log(url)
                         window.location.href=url
 
-
-
                     },
                     error: function(){
                         alert("Not details found")
@@ -299,15 +293,8 @@
             });
         }
 
-      
-
-        
     }
     
-  
-
-    
-  
     </script>
     </body>
 

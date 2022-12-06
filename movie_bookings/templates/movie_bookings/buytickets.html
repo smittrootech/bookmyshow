@@ -1,3 +1,21 @@
+{% extends "movie_bookings/base.html" %}
+
+{% block date %}
+
+<input type="date" id="date" name="date" onchange="handler(event)">
+
+{% endblock date %}
+
+{% block city %}
+
+<p class="my-2 mx-5">{{city_name}}</p>
+
+{% endblock city %}
+
+{% block search %}{% endblock %}
+
+{% block content%}
+
 <head>
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>Select Seat</title>
@@ -133,6 +151,8 @@
 
 </head>
 
+
+
 <body>
 
   <script src="https://code.jquery.com/jquery-3.6.1.js" integrity="sha256-3zlB5s2uwoUzrXK3BT7AX3FyvojsraNFxCc2vC/7pNI=" crossorigin="anonymous"></script>
@@ -151,7 +171,7 @@
   
   </header>
 
-{% load static %}
+
 
 
 {% for hall,time_price in context.items %}
@@ -184,7 +204,14 @@
  
 <script>
 
+  $("#date").val("{{date}}")
+
+
+  function handler(e){
+
+    window.location.href = 'http://127.0.0.1:8000/movies/MovieShows/' + "{{movie_name}}" +'/'+ "{{city_name}}" +'/' + e.target.value + '/' ;
     
+  } 
 
 
     function modal_html_put(data,cinema_hall){
@@ -334,4 +361,7 @@
         }
 </script>
 
+
 </body> 
+{% endblock content %}
+
