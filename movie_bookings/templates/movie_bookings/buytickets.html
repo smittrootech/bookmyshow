@@ -142,6 +142,42 @@
           {
           background-color: #FA0000;
       }
+      .popup-container {
+        width: 100%;
+        height: 900px;
+      }
+      .popup-box {
+          position: absolute;
+      /*    top: 10%;
+          left: 50%;*/
+          margin: 0 33%;
+      /*    margin-left: -250px;*/
+          width: 420px;
+        height: 200px;
+          background-color: rgb(221, 221, 221);
+          padding: 20px 40px;
+          z-index: 1000;
+        margin: auto;
+        top: 0; left: 0; bottom: 0; right: 0;
+        display: none;
+      }
+      .popup-box div {
+          clear: both;
+      }
+      
+      .popup-box h3 {
+          display: inline;
+      }
+      
+      .popup-box nav.close {
+        float: right;
+        font-size: 20px;
+        color: #000000;
+        background:green;
+        z-index: 9999;
+      /*  opacity: 0.2;
+        filter: alpha(opacity=20);*/
+      }
       
         
   </style>
@@ -184,8 +220,8 @@
 
             <div class="ml-auto">
                         {% for t_p in  time_price %} 
-                            {% for k, v in t_p.items %} 
-                                <button type="button" style="text-left" class="btn btn-outline-primary" id="{{movie_name}}_||_{{hall}}_||_{{v}}" value={{k}} onclick="getbookingdetail(this,modal)"> 
+                            {% for k, v in t_p.items %}
+                                <button type="button" style="text-left" class="btn btn-outline-primary" id="{{movie_name}}_||_{{hall}}_||_{{v}}" name="hover_price" value={{k}} onclick="getbookingdetail(this,modal)"> 
                                   {{k}}
                                 </button>
                         {% endfor %}
@@ -193,6 +229,8 @@
             </div> 
             
         </div>
+    </div>
+    <div id ="popup">
     </div>
     
 {% endfor %}
@@ -225,7 +263,7 @@
             for (i=0;i<=time.length-1;i++){
                 let movie_time = Object.keys(time[i]);
                 movie_time.forEach((m) => {
-                  dt=dt+`<button type="button" "text-left" class="btn btn-outline-primary mx-1" id = "${movie}_||_${cinema_hall}_||_${time[i][m]}" value="${m}" onclick="getbookingdetail(this,modal)">${m}</button>`
+                  dt=dt+`<button type="button" "text-left" class="btn btn-outline-primary mx-1" id = "${movie}_||_${cinema_hall}_||_${time[i][m]}" value="${m}" name="hover_price" onclick="getbookingdetail(this,modal)">${m}</button>`
 
               })
             }
@@ -334,7 +372,23 @@
                 </div>
               </div>
             `
+
+        
+          $("button[name='hover_price']").mouseover(function(){
+            val=$(this).attr("id").split("_||_")[2]
+            abc= `<section class="popup-container">
+              <div class="popup-box">
+                  <p>${val}</p>
+                </div>
+              </section> `
             
+            
+            $("#popup").html(abc)
+
+
+            
+            });
+         
 
         function getbookingdetail(object,modal){
             id=object.getAttribute('id').split("_||_")

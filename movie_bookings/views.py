@@ -1,35 +1,37 @@
 import json
 from django.shortcuts import render
 from django.shortcuts import redirect
-
 from django.utils.decorators import method_decorator
 from django.db.models import CharField
 from django.db.models.functions import Lower
-
-from django.views.generic.base import TemplateView
-
 CharField.register_lookup(Lower)
-from django.db.models import Q
-
-
 from .models import Movies,Show
 from django.views import View
 from django.http import JsonResponse
 from django.urls import reverse
 import datetime
 from django.views.decorators.csrf import csrf_exempt
-
 import itertools
-
 from .models import CinemaSeats,CinemaHall,Show,City
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
-from .forms import MoviesDetailForm,SeatBooking
+from .forms import MoviesDetailForm,CinemaHallForm
+from django.forms import formset_factory
 
+
+def formset_view(request):
+    context ={}
+  
+    # creating a formset
+    cinemabookformset = formset_factory(CinemaHallForm)
+    formset = cinemabookformset()
+      
+    # Add the formset to context dictionary
+    context['formset']= formset
+    return render(request, "movie_bookings/booking.html", context)
 
 class AllMovies(View):
-    def get(self, request):
-        print(request.user)
+    def get(self, request): 
         upcoming_movies=Movies.objects.filter(release_date__gte=datetime.datetime.now())
         current_movies=Movies.objects.filter(release_date__lte=datetime.datetime.now())
         return render(request,'movie_bookings/bookmyshow.html',{"current_movies":current_movies,"upcoming_movies":upcoming_movies})
@@ -38,7 +40,6 @@ class AllMovies(View):
 def upload_file(request):
     if request.method == 'POST':
         form = MoviesDetailForm(request.POST, request.FILES)
-        print(form.data)
         if form.is_valid():
             form.save()
             return HttpResponseRedirect('MovieListView')
@@ -69,11 +70,9 @@ class MoviesShows(View):
                     shows[i.cinema_hall.name] = [{str(i.start_time):i.price}]
                 else:
                     shows[i.cinema_hall.name] += [{str(i.start_time):i.price}]
-            print(date)
             return render(request,'movie_bookings/buytickets.html',{'context':shows,'city':city_id ,'movie_name':movie_name ,'city_name':city_name,'date':str(date)})
 
         except Exception as e:
-            print(e)
             return redirect('movies_in_city', city_id=city_id)
         
         
@@ -82,8 +81,6 @@ def is_ajax(request):
 
 class TheatreShows(View):
     def get(self, request,cinema_hall,city_id,date):
-        # if is_ajax(request=request):
-        print("abc")
         current_movies=Show.objects.filter(cinema_hall__name=cinema_hall
         ).filter(city__name=city_id,date=date)
         shows={}
@@ -134,7 +131,6 @@ class BookSeats(View):
         return super(BookSeats, self).dispatch(request, *args, **kwargs)
   
     def post(self,request):
-        # if is_ajax(request=request):
         # import pdb;pdb.set_trace()
         # print(">>>>>>>",request)
         data=json.load(request)
@@ -159,31 +155,25 @@ class BookSeats(View):
         cinema_hall=CinemaHall.objects.get(name=cinema_hall,city__name=city_name)
         movie_name=Movies.objects.get(title=movie_name)
         show_time=Show.objects.get(start_time=time,date=date,cinema_hall__name=cinema_hall)
-        
-        print(selected_total_seats)
 
         if amount_paid:
-            print("update")
             events = CinemaSeats.objects.filter(seatnumber=total_seats_bookig,type="GOLD",show_time=show_time,cinema_hall=cinema_hall,movie_name=movie_name,city=city_name,final_price=payable_amount,booked_seats=selected_total_seats)
             events.update(amount_paid=True)
-        
-        
+            obj = Show.objects.get(cinema_hall__name=cinema_hall,movie__title=movie_name,start_time=str(show_time.start_time),city__name=city_name,date=date)
+            booked_seats=len(selected_total_seats)
+            obj.total_seats=obj.total_seats-booked_seats
+            obj.save()
+
         elif selected_total_seats[1]=="Revert_seats":
             selected_total_seats=selected_total_seats[0].split(",")
-            print(selected_total_seats)
-            print("delete")
             events = CinemaSeats.objects.filter(seatnumber=total_seats_bookig,type="GOLD",show_time=show_time,cinema_hall=cinema_hall,movie_name=movie_name,city=city_name,final_price=payable_amount,booked_seats=selected_total_seats)
             events.delete()
 
         else:
-            print("else")
+        
             cinema_booking=CinemaSeats(seatnumber=total_seats_bookig,type="GOLD",show_time=show_time,cinema_hall=cinema_hall,movie_name=movie_name,city=city_name,final_price=payable_amount,booked_seats=selected_total_seats)
             cinema_booking.save()
-            obj = Show.objects.get(cinema_hall__name=cinema_hall,movie__title=movie_name,start_time=str(show_time.start_time),city__name=city_name,date=date)
-            print(obj)
-            booked_seats=len(selected_total_seats)
-            obj.total_seats=obj.total_seats-booked_seats
-            obj.save()
+           
 
         return JsonResponse(data,safe=False)
 
@@ -198,7 +188,6 @@ class BookSeats(View):
         payable_amount=int(request.GET.get('payable_amount'))
         selected_total_seats=request.GET.get('selected_total_seats')
         current_time=request.GET.get('current_time')
-        print(payable_amount)
         convenience_fees= int((0.18)*payable_amount) + payable_amount
 
         return render(request,'movie_bookings/payment_page.html',{"city_name":city_name,"selected_total_seats":selected_total_seats,"payable_amount":payable_amount,"convenience_fees":convenience_fees,"time":time,"cinema_hall":cinema_hall,"movie_name":movie_name,"date":date,"total_seats_bookig":total_seats_bookig,"current_time":current_time})
